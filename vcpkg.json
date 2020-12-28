@@ -1,0 +1,14 @@
+{
+    "name": "osa",
+    "version-string": "0.1.0",
+    "description": "",
+    "homepage": "",
+    "license": "",
+    "dependencies": [
+      "boost-atomic",
+      "span-lite",
+      "spdlog",
+      "pugixml",
+      "nlohmann-json"
+    ]
+  }
