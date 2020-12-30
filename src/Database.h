@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Utils.h"
+#include "Util.h"
 
 namespace DB
 {
@@ -16,7 +16,7 @@ namespace DB
 			if (auto id = scene.attribute("id")) {
 				auto id_val = id.value();
 				j_obj["sceneid"] = id_val;
-				split_id = StringSplit(id_val, '|');
+				split_id = Util::StringSplit(id_val, '|');
 			}
 
 			if (auto actors = scene.attribute("actors"))
@@ -186,7 +186,7 @@ namespace DB
 			}
 		}
 
-		auto db_path = GetDatabasePath()->string();
+		auto db_path = Util::GetDatabasePath()->string();
 		std::ofstream db_file(db_path);
 		db_file << std::setw(2) << j_root << std::endl;
 

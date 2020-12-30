@@ -3,8 +3,6 @@
 #include "RE/Skyrim.h"
 #include "SKSE/SKSE.h"
 
-#include <filesystem>
-
 #include <spdlog/sinks/basic_file_sink.h>
 
 #include "pugixml.hpp"
@@ -13,8 +11,6 @@
 namespace WinAPI
 {
 	using namespace SKSE::WinAPI;
-
-	//void(SHGetKnownFolderPath)();
 }
 
 namespace fs = std::filesystem;
