@@ -35,6 +35,8 @@ endif()
 
 # ---- Globals ----
 
+set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "")
+
 set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMake")
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 

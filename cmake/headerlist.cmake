@@ -1,7 +1,9 @@
 set(headers ${headers}
-	src/Database.h
-	src/Misc.h
-	src/Papyrus.h
 	src/PCH.h
-	src/Util.h
+	src/Papyrus/Papyrus.h
+	src/Papyrus/PapyrusCamera.h
+	src/Papyrus/PapyrusDatabase.h
+	src/Papyrus/PapyrusObject.h
+	src/Util/Misc.h
+	src/Util/Util.h
 )
