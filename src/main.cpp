@@ -1,7 +1,5 @@
 #include "Version.h"
-#include "Misc.h"
-#include "Database.h"
-#include "Papyrus.h"
+#include "Papyrus/Papyrus.h"
 
 extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info)
 {
@@ -53,8 +51,7 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 {
 	SKSE::Init(a_skse);
 
-	auto papyrus = SKSE::GetPapyrusInterface();
-	if (!papyrus->Register(Papyrus::Register)) {
+	if (!Papyrus::Register()) {
 		return false;
 	}
 

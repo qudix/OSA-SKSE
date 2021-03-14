@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Util.h"
-
-namespace DB
+namespace Papyrus::Database
 {
+	using VM = RE::BSScript::IVirtualMachine;
+
 	std::set<std::string> aggressive_class{ "Ro", "HhPJ", "HhBj", "HhPo", "SJ" };
 	std::set<std::string> aggressive_mod{ "BG", "BB" };
 
@@ -133,11 +133,11 @@ namespace DB
 		return j_obj;
 	}
 
-	void Build()
+	void BuildDB(RE::StaticFunctionTag*)
 	{
 		auto timer_start = std::chrono::high_resolution_clock::now();
 
-		const fs::path root_path("Data/Meshes/0SA/mod/0Sex/scene");
+		const fs::path root_path("Data\\Meshes\\0SA\\mod\\0Sex\\scene");
 
 		if (!fs::exists(root_path)) {
 			logger::info("scene folder not found");
@@ -145,22 +145,28 @@ namespace DB
 		}
 
 		auto j_root = json::array();
-		
+
 		for (auto const& mod : fs::directory_iterator(root_path)) {
+			if (!mod.is_directory())
+				continue;
+
 			auto& mod_path = mod.path();
-
 			for (auto& pos : fs::directory_iterator(mod_path)) {
-				auto& pos_path = pos.path();
+				if (!pos.is_directory())
+					continue;
 
+				auto& pos_path = pos.path();
 				auto posName = pos_path.filename().string();
 				if (posName == "_TOG")
 					continue;
 
 				for (auto& cls : fs::directory_iterator(pos_path)) {
-					auto& cls_path = cls.path();
+					if (!cls.is_directory())
+						continue;
 
+					auto& cls_path = cls.path();
 					for (auto& file : fs::directory_iterator(cls_path)) {
-						if (!fs::exists(file) || !fs::is_regular_file(file))
+						if (!file.exists() || !file.is_regular_file())
 							continue;
 
 						auto& file_path = file.path();
@@ -193,5 +199,18 @@ namespace DB
 		auto timer_finish = std::chrono::high_resolution_clock::now();
 		std::chrono::duration<double> timer_elapsed = timer_finish - timer_start;
 		logger::info("timer: {}", timer_elapsed.count());
+	}
+
+	static constexpr char CLASS_NAME[] = "OSANative";
+	bool Register(VM* a_vm)
+	{
+		if (!a_vm) {
+			logger::critical("Papyrus Database: Couldn't get VM");
+			return false;
+		}
+
+		a_vm->RegisterFunction("BuildDB", CLASS_NAME, BuildDB);
+
+		return true;
 	}
 }

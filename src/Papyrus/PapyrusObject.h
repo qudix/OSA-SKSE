@@ -1,13 +1,8 @@
 #pragma once
 
-namespace Papyrus
+namespace Papyrus::Object
 {
 	using VM = RE::BSScript::IVirtualMachine;
-
-	void BuildDB(RE::StaticFunctionTag*)
-	{
-		DB::Build();
-	}
 
 	bool IsBed(RE::TESObjectREFR* a_ref)
 	{
@@ -23,7 +18,7 @@ namespace Papyrus
 		auto root = a_ref->Get3D();
 		if (!root)
 			return false;
-			
+
 		auto extra = root->GetExtraData("FRN");
 		if (!extra)
 			return false;
@@ -83,11 +78,15 @@ namespace Papyrus
 	}
 
 	static constexpr char CLASS_NAME[] = "OSANative";
-
 	bool Register(VM* a_vm)
 	{
-		a_vm->RegisterFunction("BuildDB", CLASS_NAME, BuildDB);
+		if (!a_vm) {
+			logger::critical("Papyrus Object: Couldn't get VM");
+			return false;
+		}
+
 		a_vm->RegisterFunction("FindBed", CLASS_NAME, FindBed);
+
 		return true;
 	}
 }
