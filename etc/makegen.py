@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 HEADER_TYPES = (".h", ".hpp", ".hxx")
 SOURCE_TYPES = (".c", ".cpp", ".cxx")
@@ -23,7 +24,7 @@ def make_cmake(a_directories):
 			sources.append(name)
 
 	def do_make(a_filename, a_varname, a_files):
-		out = open("cmake/" + a_filename + ".cmake", "w", encoding="utf-8")
+		out = open("etc/cmake/" + a_filename + ".cmake", "w", encoding="utf-8")
 		out.write("set(" + a_varname + " ${" + a_varname + "}\n")
 
 		for file in a_files:
@@ -36,7 +37,7 @@ def make_cmake(a_directories):
 
 def main():
 	cur = os.path.dirname(os.path.realpath(__file__))
-	os.chdir(cur)
+	os.chdir(os.path.split(cur)[0])
 	make_cmake([ "include", "src" ])
 
 if __name__ == "__main__":

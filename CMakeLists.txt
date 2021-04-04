@@ -1,25 +1,24 @@
 cmake_minimum_required(VERSION 3.19)
 
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>" CACHE STRING "")
 set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
-set(VCPKG_TARGET_TRIPLET "x64-windows-static" CACHE STRING "")
+set(VCPKG_TARGET_TRIPLET "x64-windows-static-md" CACHE STRING "")
 
 # ---- Project ----
 
 project(
 	OSA
-	VERSION 0.1.0
+	VERSION 0.2.0
 	LANGUAGES CXX
 )
 
 configure_file(
-	${CMAKE_CURRENT_SOURCE_DIR}/cmake/Version.h.in
+	${CMAKE_CURRENT_SOURCE_DIR}/etc/cmake/Version.h.in
 	${CMAKE_CURRENT_BINARY_DIR}/include/Version.h
 	@ONLY
 )
 
 configure_file(
-	${CMAKE_CURRENT_SOURCE_DIR}/cmake/version.rc.in
+	${CMAKE_CURRENT_SOURCE_DIR}/etc/cmake/version.rc.in
 	${CMAKE_CURRENT_BINARY_DIR}/version.rc
 	@ONLY
 )
@@ -40,35 +39,23 @@ set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "")
 set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMake")
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-# ---- Dependencies ----
-
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_DEBUG OFF)
-
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_STATIC_RUNTIME ON CACHE BOOL "")
 set(Boost_USE_DEBUG_RUNTIME ON)
+
 
 if (MSVC)
 	add_compile_definitions(
 		_UNICODE
 	)
 
-	set(COMPILE_OPTIONS_DEBUG
-		/Zc:inline-	# Keep unreferenced COMDAT
-		/JMC	# Just My Code debugging
-	)
-
-	set(COMPILE_OPTIONS_RELEASE
-		/Zc:inline	# Remove unreferenced COMDAT
-		/JMC-	# Disable Just My Code debugging
-	)
+	string(REPLACE " " ";" MY_CXX_FLAGS "${VCPKG_CXX_FLAGS}")
+	string(REPLACE " " ";" MY_CXX_FLAGS_DEBUG "${VCPKG_CXX_FLAGS_DEBUG}")
+	string(REPLACE " " ";" MY_CXX_FLAGS_RELEASE "${VCPKG_CXX_FLAGS_RELEASE}")
 
 	add_compile_options(
-		/Gy		# Enable Function-Level Linking
 		/MP		# Build with Multiple Processes
-		/Oi		# Generate Intrinsic Functions
 		/sdl	# Enable Additional Security Checks
 		/Zi		# Debug Information Format
 
@@ -103,29 +90,21 @@ if (MSVC)
 		/W4	# Warning level (all warnings)
 		/WX	# Warning level (warnings are errors)
 
-		"$<$<CONFIG:Debug>:${COMPILE_OPTIONS_DEBUG}>"
-		"$<$<CONFIG:Release>:${COMPILE_OPTIONS_RELEASE}>"
+		${MY_CXX_FLAGS}
+		"$<$<CONFIG:DEBUG>:${MY_CXX_FLAGS_DEBUG}>"
+		"$<$<CONFIG:RELEASE>:${MY_CXX_FLAGS_RELEASE};/Zc:inline;/JMC->"
 	)
 
-	set(LINK_OPTIONS_DEBUG
-		/INCREMENTAL	# Link Incrementally
-		/OPT:NOREF		# Optimizations (keep functions/data never referenced)
-		/OPT:NOICF		# Optimizations (prevent identical COMDAT folding)
-	)
-
-	set(LINK_OPTIONS_RELEASE
-		/INCREMENTAL:NO	# Link Incrementally
-		/OPT:REF		# Optimizations (eliminate functions/data never referenced)
-		/OPT:ICF		# Optimizations (perform identical COMDAT folding)
-	)
-
-	add_link_options(
-		"$<$<CONFIG:Debug>:${LINK_OPTIONS_DEBUG}>"
-		"$<$<CONFIG:Release>:${LINK_OPTIONS_RELEASE}>"
-	)
+	# fix a warning with /Ob2 being overridden with /Ob3
+	string(REPLACE "/Ob2" "/Ob3" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
 endif()
 
-add_subdirectory("extern/CommonLibSSE" CommonLibSSE)
+# ---- Dependencies ----
+
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_DEBUG OFF)
+
+add_subdirectory("lib/CommonLibSSE" CommonLibSSE)
 
 find_package(spdlog REQUIRED)
 find_package(pugixml REQUIRED)
@@ -133,8 +112,8 @@ find_package(nlohmann_json REQUIRED)
 
 # ---- Add source files ----
 
-include(cmake/headerlist.cmake)
-include(cmake/sourcelist.cmake)
+include(etc/cmake/headerlist.cmake)
+include(etc/cmake/sourcelist.cmake)
 
 source_group(
 	TREE ${CMAKE_CURRENT_SOURCE_DIR}
@@ -151,7 +130,9 @@ source_group(
 
 # ---- Create DLL ----
 
-add_library(${PROJECT_NAME} SHARED
+add_library(
+	${PROJECT_NAME} 
+	SHARED
 	${headers}
 	${sources}
 	${CMAKE_CURRENT_BINARY_DIR}/include/Version.h
@@ -159,20 +140,31 @@ add_library(${PROJECT_NAME} SHARED
 	.clang-format
 )
 
-target_compile_features(${PROJECT_NAME}
-	PUBLIC
-		cxx_std_17
+set_property(
+	TARGET
+		${PROJECT_NAME}
+		CommonLibSSE
+	PROPERTY
+		MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL"
 )
 
-target_include_directories(${PROJECT_NAME}
+target_compile_features(
+	${PROJECT_NAME}
+	PUBLIC
+		cxx_std_20
+)
+
+target_include_directories(
+	${PROJECT_NAME}
 	PRIVATE
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
-        $<INSTALL_INTERFACE:src>
+		$<INSTALL_INTERFACE:src>
 )
 
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(
+	${PROJECT_NAME}
 	PUBLIC
 		CommonLibSSE::CommonLibSSE
 		spdlog::spdlog
@@ -180,7 +172,8 @@ target_link_libraries(${PROJECT_NAME}
 		nlohmann_json::nlohmann_json
 )
 
-target_precompile_headers(${PROJECT_NAME}
+target_precompile_headers(
+	${PROJECT_NAME}
 	PRIVATE
 		src/PCH.h
 )
@@ -189,6 +182,7 @@ if (MSVC)
 	target_link_options(
 		${PROJECT_NAME}
 		PRIVATE
+			/WX	# Treat Linker Warnings as Errors
 			"$<$<CONFIG:DEBUG>:/INCREMENTAL;/OPT:NOREF;/OPT:NOICF>"
 			"$<$<CONFIG:RELEASE>:/INCREMENTAL:NO;/OPT:REF;/OPT:ICF;/DEBUG:FULL>"
 	)
