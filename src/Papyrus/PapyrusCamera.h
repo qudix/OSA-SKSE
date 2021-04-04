@@ -13,6 +13,30 @@ namespace
 		REL::Relocation<_ToggleFreeCam_> ToggleFreeCamFunc{ REL::ID(49876) };
 		ToggleFreeCamFunc(a_camera, a_stopTime);
 	}
+
+	void _SetFreeCamSpeed(float a_speed)
+	{
+		const auto ini = RE::INISettingCollection::GetSingleton();
+		const auto speed = ini->GetSetting("fFreeCameraTranslationSpeed:Camera");
+		if (speed)
+			speed->data.f = a_speed;
+	}
+
+	// Enable freecam controls
+	void _sub_140C11AE0(RE::ControlMap* a_controlMap, int64_t a_arg2)
+	{
+		using func_t = decltype(&_sub_140C11AE0);
+		REL::Relocation<func_t> sub_140C11AE0{ REL::ID(67243) };
+		sub_140C11AE0(a_controlMap, a_arg2);
+	}
+
+	// Disable freecam controls?
+	void _sub_140C11BC0(RE::ControlMap* a_controlMap, int64_t a_arg2)
+	{
+		using func_t = decltype(&_sub_140C11BC0);
+		REL::Relocation<func_t> sub_140C11BC0{ REL::ID(67244) };
+		sub_140C11BC0(a_controlMap, a_arg2);
+	}
 }
 
 namespace Papyrus::Camera
@@ -21,47 +45,61 @@ namespace Papyrus::Camera
 
 	bool IsFreeCam(RE::StaticFunctionTag*)
 	{
-		auto camera = RE::PlayerCamera::GetSingleton();
-		if (camera)
-			return _IsFreeCam(camera);
-
-		return false;
+		const auto camera = RE::PlayerCamera::GetSingleton();
+		return camera ? _IsFreeCam(camera) : false;
 	}
 
-	void EnableFreeCam(RE::StaticFunctionTag*, bool a_stopTime, [[maybe_unused]] float a_speed)
+	void EnableFreeCam(RE::StaticFunctionTag*, bool a_stopTime)
 	{
-		auto camera = RE::PlayerCamera::GetSingleton();
+		const auto camera = RE::PlayerCamera::GetSingleton();
 		if (camera) {
 			if (!_IsFreeCam(camera)) {
-				logger::info("EnableFreeCam");
 				_ToggleFreeCam(camera, a_stopTime);
+
+				const auto control = RE::ControlMap::GetSingleton();
+				_sub_140C11AE0(control, 13);
 			}
 		}
 	}
 
 	void DisableFreeCam(RE::StaticFunctionTag*)
 	{
-		auto camera = RE::PlayerCamera::GetSingleton();
+		const auto camera = RE::PlayerCamera::GetSingleton();
 		if (camera) {
 			if (_IsFreeCam(camera)) {
-				logger::info("DisableFreeCam");
 				_ToggleFreeCam(camera, false);
+
+				const auto control = RE::ControlMap::GetSingleton();
+				_sub_140C11BC0(control, 13);
 			}
 		}
 	}
 
-	static constexpr char CLASS_NAME[] = "OSANative";
-    bool Register(VM* a_vm)
+	void SetFreeCamSpeed(RE::StaticFunctionTag*, float a_speed)
 	{
-		if (!a_vm) {
-			logger::critical("Papyrus Camera: Couldn't get VM");
-			return false;
+		if (a_speed >= 0.0f)
+			_SetFreeCamSpeed(a_speed);
+	}
+
+	void SetFOV(RE::StaticFunctionTag*, float a_value, bool a_firstPerson)
+	{
+		const auto camera = RE::PlayerCamera::GetSingleton();
+		if (camera) {
+			if (a_firstPerson)
+				camera->firstPersonFOV = a_value;
+			else
+				camera->worldFOV = a_value;
 		}
+	}
 
-		a_vm->RegisterFunction("IsFreeCam", CLASS_NAME, IsFreeCam);
-		a_vm->RegisterFunction("EnableFreeCam", CLASS_NAME, EnableFreeCam);
-		a_vm->RegisterFunction("DisableFreeCam", CLASS_NAME, DisableFreeCam);
+    void Bind(VM& a_vm)
+	{
+		const auto obj = "OSANative"sv;
 
-		return true;
+		BIND(IsFreeCam);
+		BIND(EnableFreeCam);
+		BIND(DisableFreeCam);
+		BIND(SetFreeCamSpeed);
+		BIND(SetFOV);
 	}
 }

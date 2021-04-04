@@ -44,19 +44,19 @@ namespace Papyrus::Object
 		if (!a_centerRef)
 			return vec;
 
-		auto handler = RE::TESDataHandler::GetSingleton();
-		auto keyword = handler->LookupForm(0xFD0E1, "Skyrim.esm"sv)->As<RE::BGSKeyword>();
+		const auto handler = RE::TESDataHandler::GetSingleton();
+		const auto keyword = handler->LookupForm(0xFD0E1, "Skyrim.esm"sv)->As<RE::BGSKeyword>();
 		if (!handler || !keyword)
 			return vec;
 
 		auto TES = RE::TES::GetSingleton();
 		if (TES) {
-			auto originPos = a_centerRef->GetPosition();
-			auto squaredRadius = a_radius * a_radius;
+			const auto originPos = a_centerRef->GetPosition();
 
-			IterateOverAttachedCells(TES, originPos, squaredRadius, [&](RE::TESObjectREFR& a_ref) {
-				if (a_ref.GetBaseObject()->Is(RE::FormType::Furniture)) {
-					auto refPos = a_ref.GetPosition();
+			util::iterate_attached_cells(TES, originPos, a_radius * a_radius, [&](RE::TESObjectREFR& a_ref) {
+				bool isType = a_ref.GetBaseObject()->Is(RE::FormType::Furniture);
+				if (isType) {
+					const auto refPos = a_ref.GetPosition();
 					bool sameFloor = (a_sameFloor > 0.0) ? (std::fabs(originPos.z - refPos.z) <= a_sameFloor) : true;
 					if (sameFloor) {
 						if (a_ref.HasKeyword(keyword) && IsBed(&a_ref)) {
@@ -77,16 +77,10 @@ namespace Papyrus::Object
 		return vec;
 	}
 
-	static constexpr char CLASS_NAME[] = "OSANative";
-	bool Register(VM* a_vm)
+	void Bind(VM& a_vm)
 	{
-		if (!a_vm) {
-			logger::critical("Papyrus Object: Couldn't get VM");
-			return false;
-		}
+		const auto obj = "OSANative"sv;
 
-		a_vm->RegisterFunction("FindBed", CLASS_NAME, FindBed);
-
-		return true;
+		BIND(FindBed);
 	}
 }

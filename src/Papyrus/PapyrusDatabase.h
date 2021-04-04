@@ -16,7 +16,7 @@ namespace Papyrus::Database
 			if (auto id = scene.attribute("id")) {
 				auto id_val = id.value();
 				j_obj["sceneid"] = id_val;
-				split_id = Util::StringSplit(id_val, '|');
+				split_id = stl::string_split(id_val, '|');
 			}
 
 			if (auto actors = scene.attribute("actors"))
@@ -114,6 +114,7 @@ namespace Papyrus::Database
 		auto anim_class = cls_path.filename().string();
 		auto source_mod = mod_path.filename().string();
 
+		// ugh...
 		if (anim_class == "PO")
 			anim_class = "Po";
 
@@ -135,8 +136,7 @@ namespace Papyrus::Database
 
 	void BuildDB(RE::StaticFunctionTag*)
 	{
-		auto timer_start = std::chrono::high_resolution_clock::now();
-
+		const auto timer_start = std::chrono::high_resolution_clock::now();
 		const fs::path root_path("Data\\Meshes\\0SA\\mod\\0Sex\\scene");
 
 		if (!fs::exists(root_path)) {
@@ -145,7 +145,6 @@ namespace Papyrus::Database
 		}
 
 		auto j_root = json::array();
-
 		for (auto const& mod : fs::directory_iterator(root_path)) {
 			if (!mod.is_directory())
 				continue;
@@ -178,7 +177,7 @@ namespace Papyrus::Database
 						auto file_path_str = file_path.string();
 
 						pugi::xml_document xml_doc;
-						pugi::xml_parse_result xml_result = xml_doc.load_file(file_path_str.c_str());
+						auto xml_result = xml_doc.load_file(file_path_str.c_str());
 
 						if (!xml_result) {
 							logger::error("load failed: {} [{}]", file_path_str, xml_result.description());
@@ -192,25 +191,19 @@ namespace Papyrus::Database
 			}
 		}
 
-		auto db_path = Util::GetDatabasePath()->string();
-		std::ofstream db_file(db_path);
+		const auto db_path = util::database_path();
+		std::ofstream db_file(*db_path);
 		db_file << std::setw(2) << j_root << std::endl;
 
-		auto timer_finish = std::chrono::high_resolution_clock::now();
+		const auto timer_finish = std::chrono::high_resolution_clock::now();
 		std::chrono::duration<double> timer_elapsed = timer_finish - timer_start;
-		logger::info("timer: {}", timer_elapsed.count());
+		logger::info("Build time: {}s", timer_elapsed.count());
 	}
 
-	static constexpr char CLASS_NAME[] = "OSANative";
-	bool Register(VM* a_vm)
+	void Bind(VM& a_vm)
 	{
-		if (!a_vm) {
-			logger::critical("Papyrus Database: Couldn't get VM");
-			return false;
-		}
+		const auto obj = "OSANative"sv;
 
-		a_vm->RegisterFunction("BuildDB", CLASS_NAME, BuildDB);
-
-		return true;
+		BIND(BuildDB);
 	}
 }
