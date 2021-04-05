@@ -1,4 +1,5 @@
 set(headers ${headers}
+	src/Patch.h
 	src/PCH.h
 	src/Util.h
 	src/Papyrus/Papyrus.h
