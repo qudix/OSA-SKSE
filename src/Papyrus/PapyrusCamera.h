@@ -104,11 +104,13 @@ namespace Papyrus::Camera
 
 	void SetCameraPos(RE::StaticFunctionTag*, float x, float y, float z)
 	{
+		// uses third person cam, therefore doesn't work well right now
 		const auto camera = RE::PlayerCamera::GetSingleton();
+		auto thirdState = (RE::ThirdPersonState*)camera->cameraStates[RE::CameraState::kThirdPerson].get();
 
-		RE::NiPoint3 coords = {x, y, z};
+		thirdState->posOffsetExpected = thirdState->posOffsetActual = RE::NiPoint3(x, y, z); // Instant I think
+		camera->Update();
 
-		camera->pos = coords;
 	}
 
     void Bind(VM& a_vm)
