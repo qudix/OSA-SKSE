@@ -77,10 +77,33 @@ namespace Papyrus::Object
 		return vec;
 	}
 
+	std::vector<RE::TESNPC*> LookupRelationshipPartners(RE::StaticFunctionTag*, RE::Actor* act, RE::BGSAssociationType* at){
+		RE::TESNPC* base = act->GetActorBase();
+		std::vector<RE::TESNPC*> ret;
+
+
+
+		for (auto relationship : *base->relationships) {
+
+			if (relationship->assocType == at){
+				if (relationship->npc1 == base){
+					ret.push_back(relationship->npc2);
+				} else if(relationship->npc2 == base){
+					ret.push_back(relationship->npc1);
+				}
+			}
+
+
+		}
+		return ret;
+
+	}
+
 	void Bind(VM& a_vm)
 	{
 		const auto obj = "OSANative"sv;
 
 		BIND(FindBed);
+		BIND(LookupRelationshipPartners);
 	}
 }
