@@ -104,55 +104,20 @@ namespace Papyrus::Camera
 
 	void SetCameraPos(RE::StaticFunctionTag*, float x, float y, float z)
 	{
-		// uses third person cam, therefore doesn't work well right now
-		// Pos is relative to SCREEN
-		const auto camera = RE::PlayerCamera::GetSingleton();
-		//auto thirdState = (RE::ThirdPersonState*)camera->cameraStates[RE::CameraState::kThirdPerson].get();
-
-		//thirdState->posOffsetExpected = thirdState->posOffsetActual = RE::NiPoint3(x, y, z); 
-		auto cameraObj = camera->cameraRoot;
-		cameraObj->local.translate = cameraObj->world.translate = RE::NiPoint3(x, y, z);
 		x;
 		y;
 		z;
-
-		auto obj = cameraObj->userData;
-		//logger::info("{}", obj->GetAngleX());
-		obj->SetPosition(x, y, z);
-		camera->Update();
-		//cameraObj->UpdateWorldBound();
+		// doesn't work don't use
 
 	}
 
-	RE::TESNPC* LookupRelationshipPartner(RE::StaticFunctionTag*, RE::Actor* act, RE::BGSAssociationType* at){
-		RE::TESNPC* base = act->GetActorBase();
-		RE::TESNPC* ret = nullptr;
-
-
-		auto relationshipArr = base->relationships; //Array of BGSRelationship
-
-		for (auto i = relationshipArr->begin(); i != relationshipArr->end(); ++i){
-			auto relationship = (*i);
-
-			if (relationship->assocType == at){
-				if (relationship->npc1 == base){
-					ret = relationship->npc2;
-				} else if(relationship->npc2 == base){
-					ret = relationship->npc1;
-				}
-			}
-
-
-		}
-		return ret;
-
-	}
+	
 
     void Bind(VM& a_vm)
 	{
 		const auto obj = "OSANative"sv;
 
-		BIND(LookupRelationshipPartner);
+		
 		BIND(SetCameraPos);
 		BIND(GetCameraPos);
 		BIND(IsFreeCam);
