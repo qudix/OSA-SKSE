@@ -115,7 +115,6 @@ namespace Papyrus::Object
 		const RE::BSReadWriteLock l{ lock };
 
 		//auto forms = map;
-		int b = 0;
 		for (auto thing : *map) {
 			auto form = thing.second;
 
@@ -130,9 +129,10 @@ namespace Papyrus::Object
 			}
 		}
 
-		logger::info("{}", b);
 		return ret;
 	}
+
+	// Below not offering speed improvements??
 
 	RE::TESNPC* OGetLeveledActorBase(RE::StaticFunctionTag*, RE::Actor* input){
 		if (!input){
