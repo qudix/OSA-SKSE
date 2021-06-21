@@ -134,6 +134,31 @@ namespace Papyrus::Object
 		return ret;
 	}
 
+	RE::TESNPC* GetLeveledActorBase(RE::StaticFunctionTag*, RE::Actor* input){
+		if (!input){
+			return nullptr;
+		}
+		return input->GetActorBase();
+	}
+
+	int GetSex(RE::StaticFunctionTag*, RE::TESNPC* input){
+		if (!input){
+			return -1;
+		}
+
+		auto sex = input->GetSex();
+
+		switch (sex)
+		{
+			case (RE::SEX::kMale):
+				return 0;
+			case (RE::SEX::kFemale):
+				return 1;
+		}
+
+		return -1;
+	}
+
 
 	void Bind(VM& a_vm)
 	{
@@ -142,5 +167,7 @@ namespace Papyrus::Object
 		BIND(FindBed);
 		BIND(LookupRelationshipPartners);
 		BIND(GetActorFromBase);
+		BIND(GetLeveledActorBase);
+		BIND(GetSex);
 	}
 }
