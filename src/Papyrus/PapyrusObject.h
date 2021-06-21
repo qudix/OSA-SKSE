@@ -134,14 +134,16 @@ namespace Papyrus::Object
 		return ret;
 	}
 
-	RE::TESNPC* GetLeveledActorBase(RE::StaticFunctionTag*, RE::Actor* input){
+	RE::TESNPC* OGetLeveledActorBase(RE::StaticFunctionTag*, RE::Actor* input){
 		if (!input){
 			return nullptr;
 		}
+
+
 		return input->GetActorBase();
 	}
 
-	int GetSex(RE::StaticFunctionTag*, RE::TESNPC* input){
+	int OGetSex(RE::StaticFunctionTag*, RE::TESNPC* input){
 		if (!input){
 			return -1;
 		}
@@ -159,6 +161,14 @@ namespace Papyrus::Object
 		return -1;
 	}
 
+	int OGetFormID(RE::StaticFunctionTag*, RE::TESForm* input){
+		if (!input){
+			return -1;
+		}
+
+		return input->formID;
+	}
+
 
 	void Bind(VM& a_vm)
 	{
@@ -167,7 +177,8 @@ namespace Papyrus::Object
 		BIND(FindBed);
 		BIND(LookupRelationshipPartners);
 		BIND(GetActorFromBase);
-		BIND(GetLeveledActorBase);
-		BIND(GetSex);
+		BIND(OGetLeveledActorBase);
+		BIND(OGetSex);
+		BIND(OGetFormID);
 	}
 }
