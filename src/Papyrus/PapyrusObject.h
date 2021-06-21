@@ -119,7 +119,6 @@ namespace Papyrus::Object
 			auto form = thing.second;
 
 			if (form->GetSavedFormType() == RE::FormType::ActorCharacter){
-				b += 1;
 				RE::Actor* act = form->As<RE::Actor>();
 				if (act){
 					if (act->GetActorBase() == input){
@@ -166,7 +165,12 @@ namespace Papyrus::Object
 			return -1;
 		}
 
-		return input->formID;
+		auto d = input->formID;
+		auto c = input->formID;
+		RE::Actor* act = input->As<RE::Actor>();
+		auto h = act->GetActorBase()->formID;
+
+		return d + c + h;
 	}
 
 
