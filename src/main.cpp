@@ -43,9 +43,7 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 {
 	SKSE::Init(a_skse);
 	Patch::Install();
-
-	auto papyrus = SKSE::GetPapyrusInterface();
-	papyrus->Register(Papyrus::Bind);
+	Papyrus::Bind();
 
 	logger::info(FMT_STRING("{} loaded"), Version::PROJECT);
 

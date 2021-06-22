@@ -1,6 +1,8 @@
 set(SOURCES
 	src/PCH.h
+	src/Papyrus/Papyrus.cpp
 	src/Papyrus/Papyrus.h
+	src/Papyrus/PapyrusActor.h
 	src/Papyrus/PapyrusCamera.h
 	src/Papyrus/PapyrusDatabase.h
 	src/Papyrus/PapyrusFace.h

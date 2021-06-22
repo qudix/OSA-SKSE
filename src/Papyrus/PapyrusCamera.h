@@ -39,7 +39,7 @@ namespace
 	}
 }
 
-namespace Papyrus::Camera
+namespace PapyrusCamera
 {
 	using VM = RE::BSScript::IVirtualMachine;
 
@@ -95,35 +95,29 @@ namespace Papyrus::Camera
 	std::vector<float> GetCameraPos(RE::StaticFunctionTag*)
 	{
 		const auto camera = RE::PlayerCamera::GetSingleton();
-
-		auto coords = camera->pos; // NiPoint3 object
-
-		std::vector<float> ret{ coords[0], coords[1], coords[2] };
-		return ret;
+		auto pos = camera->pos;
+		return { pos.x , pos.y, pos.z };
 	}
 
-	void SetCameraPos(RE::StaticFunctionTag*, float x, float y, float z)
+	void SetCameraPos(RE::StaticFunctionTag*, [[maybe_unused]] float x, [[maybe_unused]] float y, [[maybe_unused]] float z)
 	{
-		x;
-		y;
-		z;
 		// doesn't work don't use
-
 	}
 
-	
-
-    void Bind(VM& a_vm)
+    bool Bind(VM* a_vm)
 	{
 		const auto obj = "OSANative"sv;
-
 		
-		BIND(SetCameraPos);
-		BIND(GetCameraPos);
 		BIND(IsFreeCam);
 		BIND(EnableFreeCam);
 		BIND(DisableFreeCam);
 		BIND(SetFreeCamSpeed);
+
 		BIND(SetFOV);
+
+		BIND(GetCameraPos);
+		BIND(SetCameraPos);
+
+		return true;
 	}
 }

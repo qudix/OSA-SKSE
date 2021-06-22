@@ -8,19 +8,11 @@
 #include "pugixml.hpp"
 #include "nlohmann/json.hpp"
 
-namespace WinAPI
-{
-	using namespace SKSE::WinAPI;
-}
-
+namespace WinAPI = SKSE::WinAPI;
+namespace logger = SKSE::log;
 namespace fs = std::filesystem;
-using json = nlohmann::json;
 
 using namespace std::literals;
-
-namespace logger
-{
-	using namespace SKSE::log;
-}
+using json = nlohmann::json;
 
 #define DLLEXPORT __declspec(dllexport)
