@@ -78,8 +78,13 @@ namespace Papyrus::Object
 	}
 
 	std::vector<RE::TESNPC*> LookupRelationshipPartners(RE::StaticFunctionTag*, RE::Actor* act, RE::BGSAssociationType* at){
-		RE::TESNPC* base = act->GetActorBase();
 		std::vector<RE::TESNPC*> ret;
+
+		if (!act || !at){
+			return ret;
+		}
+
+		RE::TESNPC* base = act->GetActorBase();
 
 
 
@@ -99,11 +104,85 @@ namespace Papyrus::Object
 
 	}
 
+	RE::Actor* GetActorFromBase(RE::StaticFunctionTag*, RE::TESNPC* input){
+		RE::Actor* ret = nullptr;
+		if (!input){
+			return ret;
+		}
+
+		const auto& [map, lock] = RE::TESForm::GetAllForms();
+
+		const RE::BSReadWriteLock l{ lock };
+
+		//auto forms = map;
+		for (auto thing : *map) {
+			auto form = thing.second;
+
+			if (form->GetSavedFormType() == RE::FormType::ActorCharacter){
+				RE::Actor* act = form->As<RE::Actor>();
+				if (act){
+					if (act->GetActorBase() == input){
+						return act;
+					}
+				}
+			}
+		}
+
+		return ret;
+	}
+
+	// Below not offering speed improvements??
+
+	RE::TESNPC* OGetLeveledActorBase(RE::StaticFunctionTag*, RE::Actor* input){
+		if (!input){
+			return nullptr;
+		}
+
+
+		return input->GetActorBase();
+	}
+
+	int OGetSex(RE::StaticFunctionTag*, RE::TESNPC* input){
+		if (!input){
+			return -1;
+		}
+
+		auto sex = input->GetSex();
+
+		switch (sex)
+		{
+			case (RE::SEX::kMale):
+				return 0;
+			case (RE::SEX::kFemale):
+				return 1;
+		}
+
+		return -1;
+	}
+
+	int OGetFormID(RE::StaticFunctionTag*, RE::TESForm* input){
+		if (!input){
+			return -1;
+		}
+
+		auto d = input->formID;
+		auto c = input->formID;
+		RE::Actor* act = input->As<RE::Actor>();
+		auto h = act->GetActorBase()->formID;
+
+		return d + c + h;
+	}
+
+
 	void Bind(VM& a_vm)
 	{
 		const auto obj = "OSANative"sv;
 
 		BIND(FindBed);
 		BIND(LookupRelationshipPartners);
+		BIND(GetActorFromBase);
+		BIND(OGetLeveledActorBase);
+		BIND(OGetSex);
+		BIND(OGetFormID);
 	}
 }
