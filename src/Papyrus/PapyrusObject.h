@@ -175,7 +175,7 @@ namespace Papyrus::Object
 
 	inline SKSE::RegistrationSet<> OnInit("OnInit"sv);
 
-	void ForceFireOnInitEvent(RE::StaticFunctionTag*, RE::TESQuest* input){
+	void ForceFireOnInitEvent(RE::StaticFunctionTag*, RE::TESForm* input){
 		if (!input){
 			return;
 		}
