@@ -173,11 +173,25 @@ namespace Papyrus::Object
 		return d + c + h;
 	}
 
+	inline SKSE::RegistrationSet<> OnInit("OnInit"sv);
+
+	void ForceFireOnInitEvent(RE::StaticFunctionTag*, RE::TESQuest* input){
+		if (!input){
+			return;
+		}
+
+		OnInit.Register(input);
+		OnInit.SendEvent();
+		OnInit.Unregister(input);
+
+	}
+
 
 	void Bind(VM& a_vm)
 	{
 		const auto obj = "OSANative"sv;
 
+		BIND(ForceFireOnInitEvent);
 		BIND(FindBed);
 		BIND(LookupRelationshipPartners);
 		BIND(GetActorFromBase);
