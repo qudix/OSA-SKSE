@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Papyrus::Database
+namespace PapyrusDatabase
 {
 	using VM = RE::BSScript::IVirtualMachine;
 
@@ -200,10 +200,12 @@ namespace Papyrus::Database
 		logger::info("Build time: {}s", timer_elapsed.count());
 	}
 
-	void Bind(VM& a_vm)
+	bool Bind(VM* a_vm)
 	{
 		const auto obj = "OSANative"sv;
 
 		BIND(BuildDB);
+
+		return true;
 	}
 }

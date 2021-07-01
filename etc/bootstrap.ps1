@@ -1,3 +1,5 @@
-#requires -PSEdition Core
-cmake -B"..\build" -S"..\"
-Read-Host -Prompt "Press Enter to exit"
+Set-Location ".."
+git submodule update --init --recursive
+cmake -B "build" -S "."
+Write-Host -NoNewLine 'Press any key to continue...';
+$null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown');

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Papyrus::Face
+namespace PapyrusFace
 {
     using VM = RE::BSScript::IVirtualMachine;
 
@@ -50,11 +50,13 @@ namespace Papyrus::Face
 		return -1;
 	}
 
-	void Bind(VM& a_vm)
+	bool Bind(VM* a_vm)
 	{
 		const auto obj = "OSANative"sv;
 
 		BIND(SetFace);
 		BIND(GetFace);
+
+		return true;
 	}
 }
