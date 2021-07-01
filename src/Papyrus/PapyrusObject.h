@@ -77,10 +77,35 @@ namespace PapyrusObject
 		return vec;
 	}
 
+	std::vector<float> GetCoords(RE::StaticFunctionTag*, RE::TESObjectREFR* input){
+		if (!input){
+			std::vector<float> ret = {0.0f};
+			return ret;
+		}
+
+		std::vector<float> ret = {input->GetPositionX(), input->GetPositionY(), input->GetPositionZ()};
+		return ret;
+	}
+
+	inline SKSE::RegistrationSet<> OnInit("OnInit"sv);
+
+	void ForceFireOnInitEvent(RE::StaticFunctionTag*, RE::TESForm* input){
+		if (!input){
+			return;
+		}
+
+		OnInit.Register(input);
+		OnInit.SendEvent();
+		OnInit.Unregister(input);
+
+	}
+
 	bool Bind(VM* a_vm)
 	{
 		const auto obj = "OSANative"sv;
 
+		BIND(GetCoords);
+		BIND(ForceFireOnInitEvent)
 		BIND(FindBed);
 
 		return true;
