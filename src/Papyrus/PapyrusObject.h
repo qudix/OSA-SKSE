@@ -173,6 +173,16 @@ namespace Papyrus::Object
 		return d + c + h;
 	}
 
+	std::vector<float> GetCoords(RE::StaticFunctionTag*, RE::TESObjectREFR* input){
+		if (!input){
+			std::vector<float> ret = {0.0f};
+			return ret;
+		}
+
+		std::vector<float> ret = {input->GetPositionX(), input->GetPositionY(), input->GetPositionZ()};
+		return ret;
+	}
+
 	inline SKSE::RegistrationSet<> OnInit("OnInit"sv);
 
 	void ForceFireOnInitEvent(RE::StaticFunctionTag*, RE::TESForm* input){
@@ -191,6 +201,7 @@ namespace Papyrus::Object
 	{
 		const auto obj = "OSANative"sv;
 
+		BIND(GetCoords);
 		BIND(ForceFireOnInitEvent);
 		BIND(FindBed);
 		BIND(LookupRelationshipPartners);
