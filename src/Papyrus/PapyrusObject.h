@@ -123,6 +123,15 @@ namespace PapyrusObject
 		return input->GetDisplayFullName();
 	}
 
+	float GetScaleFactor(RE::StaticFunctionTag*, RE::TESObjectREFR* input){
+		if (!input){
+			return 0.0f;
+		}
+
+		
+		return ((float) (input->refScale)) / 100.0f ;
+	}
+
 	inline SKSE::RegistrationSet<> OnInit("OnInit"sv);
 
 	void ForceFireOnInitEvent(RE::StaticFunctionTag*, RE::TESForm* input){
@@ -147,6 +156,7 @@ namespace PapyrusObject
 		BIND(GetWeight, true);
 		BIND(GetName, true);
 		BIND(GetDisplayName, true);
+		BIND(GetScaleFactor, true);
 
 		return true;
 	}
