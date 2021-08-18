@@ -54,7 +54,11 @@ namespace PapyrusUtil
 
 	float RandomFloat(RE::StaticFunctionTag*, float min, float max)
 	{
-		return ((max - min) * ((float)rand() / RAND_MAX)) + min;
+		std::random_device rd;
+    	std::uniform_real_distribution<float> dist(min, max);
+   		std::mt19937 mt(rd());
+
+   		return dist(mt);
 	}
 
 	bool Bind(VM* a_vm)
