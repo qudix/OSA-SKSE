@@ -8,6 +8,7 @@ set(SOURCES
 	src/Papyrus/PapyrusFace.h
 	src/Papyrus/PapyrusObject.h
 	src/Papyrus/PapyrusUtil.h
+	src/Papyrus/Script.h
 	src/Patch.h
 	src/Util.cpp
 	src/Util.h
