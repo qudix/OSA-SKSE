@@ -95,9 +95,38 @@ namespace util
 		return path;
 	}
 
-	// Derived from: https://github.com/powerof3/PapyrusExtenderSSE
-	void iterate_attached_cells(RE::TES* TES, const RE::NiPoint3& a_origin, float a_radius, std::function<bool(RE::TESObjectREFR&)> a_fn)
+	bool within_radius(const RE::NiPoint3& a_origin, const RE::NiPoint3& a_obj, float a_radius)
 	{
+		if (a_radius <= 0.0f)
+			return false;
+
+		float tempx = std::abs(a_origin.x - a_obj.x);
+		float tempy = std::abs(a_origin.y - a_obj.y);
+		float tempz = std::abs(a_origin.z - a_obj.z);
+
+		if (tempx + tempy + tempz < a_radius)
+			return true;  // very small distances
+		if (tempx + tempy + tempz > a_radius / 2)
+			return false;  // very large distances
+
+		tempx = tempx * tempx;
+		tempy = tempy * tempy;
+		tempz = tempz * tempz;
+
+		float tempd = a_radius * a_radius;
+		if (tempx + tempy + tempz < tempd)
+			return true;  // near but within distance
+
+		return false;
+	}
+
+	// Derived from: https://github.com/powerof3/PapyrusExtenderSSE
+	void iterate_attached_cells(const RE::NiPoint3& a_origin, float a_radius, std::function<bool(RE::TESObjectREFR&)> a_fn)
+	{
+		auto TES = RE::TES::GetSingleton();
+		if (!TES)
+			return;
+
 		auto cell = TES->interiorCell;
 		if (cell) {
 			cell->ForEachReferenceInRange(a_origin, a_radius, [&](RE::TESObjectREFR& ref) { return a_fn(ref); });

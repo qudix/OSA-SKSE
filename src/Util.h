@@ -10,5 +10,7 @@ namespace util
     std::optional<fs::path> documents_path();
     std::optional<fs::path> database_path();
 
-    void iterate_attached_cells(RE::TES* TES, const RE::NiPoint3& a_origin, float a_radius, std::function<bool(RE::TESObjectREFR&)> a_fn);
+	bool within_radius(const RE::NiPoint3& a_origin, const RE::NiPoint3& a_obj, float a_radius);
+
+    void iterate_attached_cells(const RE::NiPoint3& a_origin, float a_radius, std::function<bool(RE::TESObjectREFR&)> a_fn);
 }

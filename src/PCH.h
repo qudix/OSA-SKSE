@@ -3,6 +3,8 @@
 #include "RE/Skyrim.h"
 #include "SKSE/SKSE.h"
 
+#include <random>
+
 #include <spdlog/sinks/basic_file_sink.h>
 
 #include "pugixml.hpp"

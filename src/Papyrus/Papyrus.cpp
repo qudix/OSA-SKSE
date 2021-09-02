@@ -1,4 +1,5 @@
 #include "Papyrus\Papyrus.h"
+#include "Papyrus\Script.h"
 
 #include "Util.h"
 

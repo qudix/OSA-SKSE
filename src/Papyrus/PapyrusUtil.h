@@ -1,76 +1,86 @@
 #pragma once
-#include <random>
-
 
 namespace PapyrusUtil
 {
     using VM = RE::BSScript::IVirtualMachine;
-
 	
-	RE::TESForm* NewObject(RE::StaticFunctionTag*, std::string classtype)
+	RE::TESForm* NewObject(RE::StaticFunctionTag*, std::string a_class)
 	{
-		logger::info("{} a", classtype);
+		logger::info("{} a", a_class);
 
-		auto const formType = RE::FormType::Quest;
+		auto vm = RE::BSScript::Internal::VirtualMachine::GetSingleton();
+		auto formType = RE::FormType::Quest;
 		auto factory = RE::IFormFactory::GetFormFactoryByType(formType);
 		auto form = factory->Create();
 
-
-		auto virtualmachine = RE::BSScript::Internal::VirtualMachine::GetSingleton();
-
-		auto handle = virtualmachine->GetObjectHandlePolicy1()->GetHandleForObject(formType, form);
 		RE::BSTSmartPointer<RE::BSScript::Object> script;
-
-		virtualmachine->CreateObject2(classtype, script);
-
-
-		virtualmachine->BindObject(script, handle, false);
+		auto handle = vm->GetObjectHandlePolicy1()->GetHandleForObject(formType, form);
+		vm->CreateObject2(a_class, script);
+		vm->BindObject(script, handle, false);
 		
 		return form;
 	}
 
-	void DeleteObject(RE::StaticFunctionTag*, RE::TESForm* form)
+	void DeleteObject(RE::StaticFunctionTag*, RE::TESForm* a_form)
 	{
 		//form->SetDelete(true);
-		auto const formType = RE::FormType::Quest;
-		auto virtualmachine = RE::BSScript::Internal::VirtualMachine::GetSingleton();
+		auto vm = RE::BSScript::Internal::VirtualMachine::GetSingleton();
+		auto formType = RE::FormType::Quest;
 
-		auto handle = virtualmachine->GetObjectHandlePolicy1()->GetHandleForObject(formType, form);
+		auto handle = vm->GetObjectHandlePolicy1()->GetHandleForObject(formType, a_form);
+		vm->ResetAllBoundObjects(handle);
+		vm->GetObjectBindPolicy()->bindInterface->RemoveAllBoundObjects(handle);
 
-		virtualmachine->ResetAllBoundObjects(handle);
-		virtualmachine->GetObjectBindPolicy()->bindInterface->RemoveAllBoundObjects(handle);
 		// dangerous??
-		delete(form);
+		// nuclear!!
+		delete (a_form);
 	}
 
-	int RandomInt(RE::StaticFunctionTag*, int min, int max)
+	int RandomInt(RE::StaticFunctionTag*, int a_min, int a_max)
 	{
 		std::random_device rd;
-    	std::uniform_int_distribution<int> dist(min, max);
+		std::uniform_int_distribution<int> dist(a_min, a_max);
    		std::mt19937 mt(rd());
 
    		return dist(mt);
 	}
 
-	float RandomFloat(RE::StaticFunctionTag*, float min, float max)
+	float RandomFloat(RE::StaticFunctionTag*, float a_min, float a_max)
 	{
 		std::random_device rd;
-    	std::uniform_real_distribution<float> dist(min, max);
+		std::uniform_real_distribution<float> dist(a_min, a_max);
    		std::mt19937 mt(rd());
 
    		return dist(mt);
+	}
+
+	void SendEvent(
+		RE::BSScript::IVirtualMachine* a_vm,
+		RE::VMStackID a_stackID,
+		RE::StaticFunctionTag*,
+		RE::TESForm* a_form,
+		std::string a_event)
+	{
+		if (!a_form) {
+			a_vm->TraceStack("Form is None", a_stackID);
+			return;
+		}
+
+		auto args = RE::MakeFunctionArguments();
+		auto handle = Script::GetHandle(a_form);
+		a_vm->SendEvent(handle, a_event, args);
+		delete args;
 	}
 
 	bool Bind(VM* a_vm)
 	{
 		const auto obj = "OSANative"sv;
 
-		BIND(NewObject);
-		BIND(DeleteObject);
 		BIND(RandomInt, true);
 		BIND(RandomFloat, true);
-
-
+		BIND(SendEvent);
+		BIND(NewObject);
+		BIND(DeleteObject);
 
 		return true;
 	}

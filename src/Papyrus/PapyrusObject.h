@@ -37,121 +37,87 @@ namespace PapyrusObject
 		return true;
 	}
 
-	std::vector<RE::TESObjectREFR*> FindBed(RE::StaticFunctionTag*, RE::TESObjectREFR* a_centerRef, float a_radius, float a_sameFloor)
+	std::vector<RE::TESObjectREFR*> FindBed(
+		RE::BSScript::IVirtualMachine* a_vm,
+		RE::VMStackID a_stackID,
+		RE::StaticFunctionTag*,
+		RE::TESObjectREFR* a_centerRef,
+		float a_radius,
+		float a_sameFloor)
 	{
-		std::vector<RE::TESObjectREFR*> vec;
-
-		if (!a_centerRef)
-			return vec;
+		if (!a_centerRef) {
+			a_vm->TraceStack("CenterRef is None", a_stackID);
+			return {};
+		}
 
 		const auto handler = RE::TESDataHandler::GetSingleton();
 		const auto keyword = handler->LookupForm(0xFD0E1, "Skyrim.esm"sv)->As<RE::BGSKeyword>();
-		if (!handler || !keyword)
-			return vec;
+		if (!handler || !keyword) {
+			a_vm->TraceStack("Could not find Furniture Keyword", a_stackID);
+			return {};
+		}
 
-		auto TES = RE::TES::GetSingleton();
-		if (TES) {
-			const auto originPos = a_centerRef->GetPosition();
-
-			util::iterate_attached_cells(TES, originPos, a_radius * a_radius, [&](RE::TESObjectREFR& a_ref) {
-				bool isType = a_ref.GetBaseObject()->Is(RE::FormType::Furniture);
-				if (isType) {
-					const auto refPos = a_ref.GetPosition();
-					bool sameFloor = (a_sameFloor > 0.0) ? (std::fabs(originPos.z - refPos.z) <= a_sameFloor) : true;
-					if (sameFloor) {
-						if (a_ref.HasKeyword(keyword) && IsBed(&a_ref)) {
-							vec.push_back(&a_ref);
-						}
-					}
-				}
-				return true;
-			});
-
-			if (!vec.empty()) {
-				std::sort(vec.begin(), vec.end(), [&](RE::TESObjectREFR* a_refA, RE::TESObjectREFR* a_refB) {
-					return originPos.GetDistance(a_refA->GetPosition()) < originPos.GetDistance(a_refB->GetPosition());
-				});
+		const auto originPos = a_centerRef->GetPosition();
+		std::vector<RE::TESObjectREFR*> vec;
+		util::iterate_attached_cells(originPos, a_radius * a_radius, [&](RE::TESObjectREFR& a_ref) {
+			bool isType = a_ref.GetBaseObject()->Is(RE::FormType::Furniture);
+			if (isType) {
+				const auto refPos = a_ref.GetPosition();
+				bool sameFloor = (a_sameFloor > 0.0) ? (std::fabs(originPos.z - refPos.z) <= a_sameFloor) : true;
+				if (sameFloor && a_ref.HasKeyword(keyword) && IsBed(&a_ref))
+					vec.push_back(&a_ref);
 			}
+			return true;
+		});
+
+		if (!vec.empty()) {
+			std::sort(vec.begin(), vec.end(), [&](RE::TESObjectREFR* a_refA, RE::TESObjectREFR* a_refB) {
+				return originPos.GetDistance(a_refA->GetPosition()) < originPos.GetDistance(a_refB->GetPosition());
+			});
 		}
 
 		return vec;
 	}
 
-	std::vector<float> GetCoords(RE::StaticFunctionTag*, RE::TESObjectREFR* input){
-		if (!input){
-			std::vector<float> ret = {0.0f};
-			return ret;
-		}
+	std::vector<float> GetCoords(RE::StaticFunctionTag*, RE::TESObjectREFR* a_ref)
+	{
+		if (!a_ref)
+			return { 0.0f, 0.0f, 0.0f };
 
-		std::vector<float> ret = {input->GetPositionX(), input->GetPositionY(), input->GetPositionZ()};
-		return ret;
+		return { a_ref->GetPositionX(), a_ref->GetPositionY(), a_ref->GetPositionZ() };
 	}
 
-	int GetFormID(RE::StaticFunctionTag*, RE::TESForm* input){
-		if (!input){
-			return 0;
-		}
-
-		
-		return input->GetFormID();
+	int GetFormID(RE::StaticFunctionTag*, RE::TESForm* a_form)
+	{	
+		return a_form ? a_form->GetFormID() : 0;
 	}
 
-	float GetWeight(RE::StaticFunctionTag*, RE::TESForm* input){
-		if (!input){
-			return 0;
-		}
-
-		
-		return input->GetWeight();
+	float GetWeight(RE::StaticFunctionTag*, RE::TESForm* a_form)
+	{	
+		return a_form ? a_form->GetWeight() : 0.0f;
 	}
 
-	std::string GetName(RE::StaticFunctionTag*, RE::TESForm* input){
-		if (!input){
-			return "";
-		}
-
-		
-		return input->GetName();
+	std::string GetName(RE::StaticFunctionTag*, RE::TESForm* a_form)
+	{
+		return a_form ? a_form->GetName() : ""s;
 	}
 
-	std::string GetDisplayName(RE::StaticFunctionTag*, RE::TESObjectREFR* input){
-		if (!input){
-			return "";
-		}
-
-		
-		return input->GetDisplayFullName();
+	std::string GetDisplayName(RE::StaticFunctionTag*, RE::TESObjectREFR* a_ref)
+	{
+		return a_ref ? a_ref->GetDisplayFullName() : ""s;
 	}
 
-	float GetScaleFactor(RE::StaticFunctionTag*, RE::TESObjectREFR* input){
-		if (!input){
-			return 0.0f;
-		}
-
-		
-		return ((float) (input->refScale)) / 100.0f ;
-	}
-
-	inline SKSE::RegistrationSet<> OnInit("OnInit"sv);
-
-	void ForceFireOnInitEvent(RE::StaticFunctionTag*, RE::TESForm* input){
-		if (!input){
-			return;
-		}
-
-		OnInit.Register(input);
-		OnInit.SendEvent();
-		OnInit.Unregister(input);
-
+	float GetScaleFactor(RE::StaticFunctionTag*, RE::TESObjectREFR* a_ref)
+	{	
+		return a_ref ? static_cast<float>(a_ref->refScale) / 100.0f : 0.0f;
 	}
 
 	bool Bind(VM* a_vm)
 	{
 		const auto obj = "OSANative"sv;
 
-		BIND(GetCoords, true);
-		BIND(ForceFireOnInitEvent);
 		BIND(FindBed);
+		BIND(GetCoords, true);
 		BIND(GetFormID, true);
 		BIND(GetWeight, true);
 		BIND(GetName, true);
