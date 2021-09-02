@@ -87,6 +87,51 @@ namespace PapyrusObject
 		return ret;
 	}
 
+	int GetFormID(RE::StaticFunctionTag*, RE::TESForm* input){
+		if (!input){
+			return 0;
+		}
+
+		
+		return input->GetFormID();
+	}
+
+	float GetWeight(RE::StaticFunctionTag*, RE::TESForm* input){
+		if (!input){
+			return 0;
+		}
+
+		
+		return input->GetWeight();
+	}
+
+	std::string GetName(RE::StaticFunctionTag*, RE::TESForm* input){
+		if (!input){
+			return "";
+		}
+
+		
+		return input->GetName();
+	}
+
+	std::string GetDisplayName(RE::StaticFunctionTag*, RE::TESObjectREFR* input){
+		if (!input){
+			return "";
+		}
+
+		
+		return input->GetDisplayFullName();
+	}
+
+	float GetScaleFactor(RE::StaticFunctionTag*, RE::TESObjectREFR* input){
+		if (!input){
+			return 0.0f;
+		}
+
+		
+		return ((float) (input->refScale)) / 100.0f ;
+	}
+
 	inline SKSE::RegistrationSet<> OnInit("OnInit"sv);
 
 	void ForceFireOnInitEvent(RE::StaticFunctionTag*, RE::TESForm* input){
@@ -104,9 +149,14 @@ namespace PapyrusObject
 	{
 		const auto obj = "OSANative"sv;
 
-		BIND(GetCoords);
-		BIND(ForceFireOnInitEvent)
+		BIND(GetCoords, true);
+		BIND(ForceFireOnInitEvent);
 		BIND(FindBed);
+		BIND(GetFormID, true);
+		BIND(GetWeight, true);
+		BIND(GetName, true);
+		BIND(GetDisplayName, true);
+		BIND(GetScaleFactor, true);
 
 		return true;
 	}

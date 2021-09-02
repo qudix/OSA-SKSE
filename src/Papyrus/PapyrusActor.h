@@ -43,8 +43,6 @@ namespace PapyrusActor
 		return nullptr;
 	}
 
-	// Below not offering speed improvements??
-	// Qudix: You didn't set callable tasklets to true for them
 
 	RE::TESNPC* GetLeveledActorBase(RE::StaticFunctionTag*, RE::Actor* a_actor)
 	{
@@ -67,14 +65,44 @@ namespace PapyrusActor
 		return -1;
 	}
 
+	void SetPositionEx(RE::StaticFunctionTag*, RE::Actor* a_actor, float x, float y, float z){
+		if (!a_actor){
+			return;
+		}
+
+		RE::NiPoint3 coord = {x, y, z};
+
+		a_actor->SetPosition(coord, false);
+	}
+
+	RE::TESRace* GetRace(RE::StaticFunctionTag*, RE::TESNPC* a_base)
+	{
+		if (!a_base)
+			return nullptr;
+
+		return a_base->GetRace();
+	}
+
+	RE::BGSVoiceType* GetVoiceType(RE::StaticFunctionTag*, RE::TESNPC* a_base)
+	{
+		if (!a_base)
+			return nullptr;
+
+		return a_base->GetVoiceType();
+	}
+
 	bool Bind(VM* a_vm)
 	{
 		const auto obj = "OSANative"sv;
 
-		BIND(LookupRelationshipPartners);
-		BIND(GetActorFromBase);
+		BIND(SetPositionEx);
+		BIND(LookupRelationshipPartners, true);
+		BIND(GetActorFromBase, true);
 		BIND(GetLeveledActorBase, true);
 		BIND(GetSex, true);
+		BIND(GetRace, true);
+		BIND(GetVoiceType, true);
+
 
 		return true;
 	}
