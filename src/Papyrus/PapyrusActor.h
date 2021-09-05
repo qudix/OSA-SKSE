@@ -116,6 +116,17 @@ namespace PapyrusActor
 		return ret;
 	}
 
+	void ToggleCombat(RE::StaticFunctionTag*, bool enable){
+		auto processor = RE::ProcessLists::GetSingleton();
+
+		processor->runDetection = enable;
+		processor->ClearCachedFactionFightReactions();
+	}
+
+	bool DetectionActive(RE::StaticFunctionTag*){
+		return RE::ProcessLists::GetSingleton()->runDetection;
+	}
+
 	bool Bind(VM* a_vm)
 	{
 		const auto obj = "OSANative"sv;
@@ -128,6 +139,8 @@ namespace PapyrusActor
 		BIND(GetActors);
 		BIND(SetPositionEx);
 		BIND(LookupRelationshipPartners, true);
+		BIND(ToggleCombat);
+		BIND(DetectionActive);
 
 
 		return true;
