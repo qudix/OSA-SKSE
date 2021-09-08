@@ -116,10 +116,59 @@ namespace PapyrusActor
 		return ret;
 	}
 
+	void ToggleCombat(RE::StaticFunctionTag*, bool enable){
+		auto processor = RE::ProcessLists::GetSingleton();
+
+		processor->runDetection = enable;
+		processor->ClearCachedFactionFightReactions();
+	}
+
+	bool DetectionActive(RE::StaticFunctionTag*){
+		return RE::ProcessLists::GetSingleton()->runDetection;
+	}
+
+	std::vector<RE::Actor*> SortActorsByDistance(RE::StaticFunctionTag*, RE::TESObjectREFR* a_ref, std::vector<RE::Actor*> a_list){
+
+
+		int i,n=a_list.size(),j;
+		RE::Actor* temp;
+
+
+		for(i=0;i<n;i++)
+		{
+    		for(j=0;j<n-i-1;j++)
+    		{
+    	    	//if( a[j]>a[j+1] )
+    	    	if ((a_ref->data.location.GetDistance(a_list[j]->data.location)) > (a_ref->data.location.GetDistance(a_list[j+1]->data.location)) )
+    	   		{
+    	    	    temp=a_list[j+1];//swaping element 
+    	    	    a_list[j+1]=a_list[j];
+    	    	    a_list[j]=temp;
+    		    }
+		    }
+		}
+		
+
+
+		return a_list;
+	}
+
+	std::vector<RE::Actor*> RemoveActorsWithGender(RE::StaticFunctionTag*, std::vector<RE::Actor*> a_list, int gender){
+		std::vector<RE::Actor*> ret;
+
+		for (auto act : a_list)
+			if (act->GetActorBase()->GetSex() != gender )
+				ret.push_back(act);
+
+		return ret;
+	}
+
 	bool Bind(VM* a_vm)
 	{
 		const auto obj = "OSANative"sv;
 
+		BIND(RemoveActorsWithGender, true);
+		BIND(SortActorsByDistance, true);
 		BIND(GetActorFromBase, true);
 		BIND(GetLeveledActorBase, true);
 		BIND(GetSex, true);
@@ -128,6 +177,8 @@ namespace PapyrusActor
 		BIND(GetActors);
 		BIND(SetPositionEx);
 		BIND(LookupRelationshipPartners, true);
+		BIND(ToggleCombat);
+		BIND(DetectionActive);
 
 
 		return true;

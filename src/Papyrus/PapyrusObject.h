@@ -112,11 +112,33 @@ namespace PapyrusObject
 		return a_ref ? static_cast<float>(a_ref->refScale) / 100.0f : 0.0f;
 	}
 
+	RE::TESObjectREFR* GetLocationMarker(RE::StaticFunctionTag*, RE::BGSLocation* a_loc){
+		if (!a_loc)
+			return nullptr;
+
+		auto marker = a_loc->worldLocMarker;
+
+		return &*marker.get();
+	}
+
+	std::vector<RE::TESForm*> RemoveFormsBelowValue(RE::StaticFunctionTag*, std::vector<RE::TESForm*> a_forms, int minValue){
+		std::vector<RE::TESForm*> ret;
+
+		for (auto thing : a_forms){
+			if (thing->GetGoldValue() > minValue)
+				ret.push_back(thing);
+		}	
+
+		return ret;
+	}
+
 	bool Bind(VM* a_vm)
 	{
 		const auto obj = "OSANative"sv;
 
+		BIND(RemoveFormsBelowValue, true);
 		BIND(FindBed);
+		BIND(GetLocationMarker, true);
 		BIND(GetCoords, true);
 		BIND(GetFormID, true);
 		BIND(GetWeight, true);
