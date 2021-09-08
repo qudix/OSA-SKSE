@@ -121,10 +121,22 @@ namespace PapyrusObject
 		return &*marker.get();
 	}
 
+	std::vector<RE::TESForm*> RemoveFormsBelowValue(RE::StaticFunctionTag*, std::vector<RE::TESForm*> a_forms, int minValue){
+		std::vector<RE::TESForm*> ret;
+
+		for (auto thing : a_forms){
+			if (thing->GetGoldValue() > minValue)
+				ret.push_back(thing);
+		}	
+
+		return ret;
+	}
+
 	bool Bind(VM* a_vm)
 	{
 		const auto obj = "OSANative"sv;
 
+		BIND(RemoveFormsBelowValue, true);
 		BIND(FindBed);
 		BIND(GetLocationMarker, true);
 		BIND(GetCoords, true);
