@@ -1,4 +1,6 @@
 set(SOURCES
+	src/Game/Locker.h
+	src/Game/Patch.h
 	src/PCH.h
 	src/Papyrus/Papyrus.cpp
 	src/Papyrus/Papyrus.h
@@ -9,7 +11,8 @@ set(SOURCES
 	src/Papyrus/PapyrusObject.h
 	src/Papyrus/PapyrusUtil.h
 	src/Papyrus/Script.h
-	src/Patch.h
+	src/Serial/Manager.cpp
+	src/Serial/Manager.h
 	src/Util.cpp
 	src/Util.h
 	src/main.cpp

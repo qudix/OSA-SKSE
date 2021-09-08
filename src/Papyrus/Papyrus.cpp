@@ -1,6 +1,7 @@
 #include "Papyrus\Papyrus.h"
 #include "Papyrus\Script.h"
 
+#include "Game/Locker.h"
 #include "Util.h"
 
 #define BIND(a_method, ...) a_vm->RegisterFunction(#a_method##sv, obj, a_method __VA_OPT__(, ) __VA_ARGS__)

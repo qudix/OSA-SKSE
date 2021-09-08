@@ -90,6 +90,18 @@ namespace PapyrusUtil
 		delete args;
 	}
 
+	bool TryLock(RE::StaticFunctionTag*, std::string a_lock)
+	{
+		auto locker = Locker::GetSingleton();
+		return locker->TryLock(a_lock);
+	}
+
+	void Unlock(RE::StaticFunctionTag*, std::string a_lock)
+	{
+		auto locker = Locker::GetSingleton();
+		locker->Unlock(a_lock);
+	}
+
 	bool Bind(VM* a_vm)
 	{
 		const auto obj = "OSANative"sv;
@@ -99,6 +111,9 @@ namespace PapyrusUtil
 		BIND(SendEvent);
 		BIND(NewObject);
 		BIND(DeleteObject);
+
+		BIND(TryLock);
+		BIND(Unlock);
 
 		return true;
 	}

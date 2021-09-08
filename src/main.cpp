@@ -1,6 +1,7 @@
 #include "Version.h"
-#include "Patch.h"
+#include "Game/Patch.h"
 #include "Papyrus/Papyrus.h"
+#include "Serial/Manager.h"
 
 extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info)
 {
@@ -44,6 +45,12 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 	SKSE::Init(a_skse);
 	Patch::Install();
 	Papyrus::Bind();
+
+	const auto serial = SKSE::GetSerializationInterface();
+	serial->SetUniqueID(Serialization::kOSA);
+	serial->SetSaveCallback(Serialization::Save);
+	serial->SetLoadCallback(Serialization::Load);
+	serial->SetRevertCallback(Serialization::Revert);
 
 	logger::info(FMT_STRING("{} loaded"), Version::PROJECT);
 
