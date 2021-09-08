@@ -75,14 +75,32 @@ namespace PapyrusCamera
 		}
 	}
 
-	void SetFreeCamSpeed(RE::StaticFunctionTag*, float a_speed)
+	void SetFreeCamSpeed(
+		RE::BSScript::IVirtualMachine* a_vm,
+		RE::VMStackID a_stackID,
+		RE::StaticFunctionTag*,
+		float a_speed)
 	{
-		if (a_speed >= 0.0f)
-			_SetFreeCamSpeed(a_speed);
+		if (a_speed < 0.0f) {
+			a_vm->TraceStack("FreeCam speed must be more than or equal to 0", a_stackID);
+			return;
+		}
+
+		_SetFreeCamSpeed(a_speed);
 	}
 
-	void SetFOV(RE::StaticFunctionTag*, float a_value, bool a_firstPerson)
+	void SetFOV(
+		RE::BSScript::IVirtualMachine* a_vm,
+		RE::VMStackID a_stackID,
+		RE::StaticFunctionTag*,
+		float a_value,
+		bool a_firstPerson)
 	{
+		if (a_value <= 0.0f) {
+			a_vm->TraceStack("FOV must be more than 0", a_stackID);
+			return;
+		}
+
 		const auto camera = RE::PlayerCamera::GetSingleton();
 		if (camera) {
 			if (a_firstPerson)

@@ -53,7 +53,7 @@ namespace PapyrusObject
 		const auto handler = RE::TESDataHandler::GetSingleton();
 		const auto keyword = handler->LookupForm(0xFD0E1, "Skyrim.esm"sv)->As<RE::BGSKeyword>();
 		if (!handler || !keyword) {
-			a_vm->TraceStack("Could not find Furniture Keyword", a_stackID);
+			a_vm->TraceStack("Could not find Furniture Keyword 0xFD0E1 (Skyrim.esm)", a_stackID);
 			return {};
 		}
 
@@ -79,54 +79,112 @@ namespace PapyrusObject
 		return vec;
 	}
 
-	std::vector<float> GetCoords(RE::StaticFunctionTag*, RE::TESObjectREFR* a_ref)
+	std::vector<float> GetCoords(
+		RE::BSScript::IVirtualMachine* a_vm,
+		RE::VMStackID a_stackID,
+		RE::StaticFunctionTag*,
+		RE::TESObjectREFR* a_ref)
 	{
-		if (!a_ref)
+		if (!a_ref) {
+			a_vm->TraceStack("ObjectReference is None", a_stackID);
 			return { 0.0f, 0.0f, 0.0f };
+		}
 
 		return { a_ref->GetPositionX(), a_ref->GetPositionY(), a_ref->GetPositionZ() };
 	}
 
-	int GetFormID(RE::StaticFunctionTag*, RE::TESForm* a_form)
+	int32_t GetFormID(
+		RE::BSScript::IVirtualMachine* a_vm,
+		RE::VMStackID a_stackID,
+		RE::StaticFunctionTag*,
+		RE::TESForm* a_form)
 	{	
-		return a_form ? a_form->GetFormID() : 0;
+		if (!a_form) {
+			a_vm->TraceStack("Form is None", a_stackID);
+			return 0;
+		}
+
+		return a_form->GetFormID();
 	}
 
-	float GetWeight(RE::StaticFunctionTag*, RE::TESForm* a_form)
-	{	
-		return a_form ? a_form->GetWeight() : 0.0f;
-	}
-
-	std::string GetName(RE::StaticFunctionTag*, RE::TESForm* a_form)
+	float GetWeight(
+		RE::BSScript::IVirtualMachine* a_vm,
+		RE::VMStackID a_stackID,
+		RE::StaticFunctionTag*,
+		RE::TESForm* a_form)
 	{
-		return a_form ? a_form->GetName() : ""s;
+		if (!a_form) {
+			a_vm->TraceStack("Form is None", a_stackID);
+			return 0.0f;
+		}
+
+		return a_form->GetWeight();
 	}
 
-	std::string GetDisplayName(RE::StaticFunctionTag*, RE::TESObjectREFR* a_ref)
+	std::string GetName(
+		RE::BSScript::IVirtualMachine* a_vm,
+		RE::VMStackID a_stackID,
+		RE::StaticFunctionTag*,
+		RE::TESForm* a_form)
 	{
-		return a_ref ? a_ref->GetDisplayFullName() : ""s;
+		if (!a_form) {
+			a_vm->TraceStack("Form is None", a_stackID);
+			return ""s;
+		}
+
+		return a_form->GetName();
 	}
 
-	float GetScaleFactor(RE::StaticFunctionTag*, RE::TESObjectREFR* a_ref)
+	std::string GetDisplayName(
+		RE::BSScript::IVirtualMachine* a_vm,
+		RE::VMStackID a_stackID,
+		RE::StaticFunctionTag*,
+		RE::TESObjectREFR* a_ref)
+	{
+		if (!a_ref) {
+			a_vm->TraceStack("ObjectReference is None", a_stackID);
+			return ""s;
+		}
+
+		return a_ref->GetDisplayFullName();
+	}
+
+	float GetScaleFactor(
+		RE::BSScript::IVirtualMachine* a_vm,
+		RE::VMStackID a_stackID,
+		RE::StaticFunctionTag*,
+		RE::TESObjectREFR* a_ref)
 	{	
-		return a_ref ? static_cast<float>(a_ref->refScale) / 100.0f : 0.0f;
+		if (!a_ref) {
+			a_vm->TraceStack("ObjectReference is None", a_stackID);
+			return 0.0f;
+		}
+
+		return static_cast<float>(a_ref->refScale) / 100.0f;
 	}
 
-	RE::TESObjectREFR* GetLocationMarker(RE::StaticFunctionTag*, RE::BGSLocation* a_loc){
-		if (!a_loc)
+	RE::TESObjectREFR* GetLocationMarker(
+		RE::BSScript::IVirtualMachine* a_vm,
+		RE::VMStackID a_stackID,
+		RE::StaticFunctionTag*,
+		RE::BGSLocation* a_loc)
+	{
+		if (!a_loc) {
+			a_vm->TraceStack("Location is None", a_stackID);
 			return nullptr;
+		}
 
-		auto marker = a_loc->worldLocMarker;
-
-		return &*marker.get();
+		auto marker = a_loc->worldLocMarker.get();
+		return marker ? marker.get() : nullptr;
 	}
 
-	std::vector<RE::TESForm*> RemoveFormsBelowValue(RE::StaticFunctionTag*, std::vector<RE::TESForm*> a_forms, int minValue){
+	std::vector<RE::TESForm*> RemoveFormsBelowValue(RE::StaticFunctionTag*, std::vector<RE::TESForm*> a_forms, int32_t a_minValue)
+	{
 		std::vector<RE::TESForm*> ret;
 
-		for (auto thing : a_forms){
-			if (thing->GetGoldValue() > minValue)
-				ret.push_back(thing);
+		for (auto& form : a_forms) {
+			if (form->GetGoldValue() > a_minValue)
+				ret.push_back(form);
 		}	
 
 		return ret;

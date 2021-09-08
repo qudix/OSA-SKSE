@@ -4,8 +4,17 @@ namespace PapyrusUtil
 {
     using VM = RE::BSScript::IVirtualMachine;
 	
-	RE::TESForm* NewObject(RE::StaticFunctionTag*, std::string a_class)
+	RE::TESForm* NewObject(
+		RE::BSScript::IVirtualMachine* a_vm,
+		RE::VMStackID a_stackID,
+		RE::StaticFunctionTag*,
+		std::string a_class)
 	{
+		if (a_class.empty()) {
+			a_vm->TraceStack("Class is empty", a_stackID);
+			return nullptr;
+		}
+
 		logger::info("{} a", a_class);
 
 		auto vm = RE::BSScript::Internal::VirtualMachine::GetSingleton();
@@ -21,8 +30,17 @@ namespace PapyrusUtil
 		return form;
 	}
 
-	void DeleteObject(RE::StaticFunctionTag*, RE::TESForm* a_form)
+	void DeleteObject(
+		RE::BSScript::IVirtualMachine* a_vm,
+		RE::VMStackID a_stackID,
+		RE::StaticFunctionTag*,
+		RE::TESForm* a_form)
 	{
+		if (!a_form) {
+			a_vm->TraceStack("Form is None", a_stackID);
+			return;
+		}
+
 		//form->SetDelete(true);
 		auto vm = RE::BSScript::Internal::VirtualMachine::GetSingleton();
 		auto formType = RE::FormType::Quest;

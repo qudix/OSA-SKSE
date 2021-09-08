@@ -4,14 +4,25 @@ namespace PapyrusFace
 {
     using VM = RE::BSScript::IVirtualMachine;
 
-	bool SetFace(RE::StaticFunctionTag*, RE::Actor* a_actor, int32_t a_mode, uint32_t a_id, int32_t a_val)
+	bool SetFace(
+		RE::BSScript::IVirtualMachine* a_vm,
+		RE::VMStackID a_stackID,
+		RE::StaticFunctionTag*,
+		RE::Actor* a_actor,
+		int32_t a_mode,
+		uint32_t a_id,
+		int32_t a_val)
 	{
-		RE::BSFaceGenAnimationData* data = a_actor ? a_actor->GetFaceGenAnimationData() : nullptr;
+		if (!a_actor) {
+			a_vm->TraceStack("Actor is None", a_stackID);
+			return false;
+		}
+
+		RE::BSFaceGenAnimationData* data = a_actor->GetFaceGenAnimationData();
 		if (!data)
 			return false;
 
 		RE::BSSpinLockGuard locker(data->lock);
-
 		if (a_mode == -1) {
 			data->ClearExpressionOverride();
 			data->Reset(0.0f, true, true, true, false);
@@ -27,9 +38,20 @@ namespace PapyrusFace
 		return false;
 	}
 
-	int32_t GetFace(RE::StaticFunctionTag*, RE::Actor* a_actor, int32_t a_mode, uint32_t a_id)
+	int32_t GetFace(
+		RE::BSScript::IVirtualMachine* a_vm,
+		RE::VMStackID a_stackID,
+		RE::StaticFunctionTag*,
+		RE::Actor* a_actor,
+		int32_t a_mode,
+		uint32_t a_id)
 	{
-		RE::BSFaceGenAnimationData* data = a_actor ? a_actor->GetFaceGenAnimationData() : nullptr;
+		if (!a_actor) {
+			a_vm->TraceStack("Actor is None", a_stackID);
+			return -1;
+		}
+
+		RE::BSFaceGenAnimationData* data =  a_actor->GetFaceGenAnimationData();
 		if (!data)
 			return -1;
 

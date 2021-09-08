@@ -4,15 +4,30 @@ namespace PapyrusActor
 {
 	using VM = RE::BSScript::IVirtualMachine;
 
-	RE::TESNPC* GetLeveledActorBase(RE::StaticFunctionTag*, RE::Actor* a_actor)
+	RE::TESNPC* GetLeveledActorBase(
+		RE::BSScript::IVirtualMachine* a_vm,
+		RE::VMStackID a_stackID,
+		RE::StaticFunctionTag*,
+		RE::Actor* a_actor)
 	{
-		return a_actor ? a_actor->GetActorBase() : nullptr;
+		if (!a_actor) {
+			a_vm->TraceStack("Actor is None", a_stackID);
+			return nullptr;
+		}
+
+		return a_actor->GetActorBase();
 	}
 
-	int32_t GetSex(RE::StaticFunctionTag*, RE::TESNPC* a_base)
+	int32_t GetSex(
+		RE::BSScript::IVirtualMachine* a_vm,
+		RE::VMStackID a_stackID,
+		RE::StaticFunctionTag*,
+		RE::TESNPC* a_base)
 	{
-		if (!a_base)
+		if (!a_base) {
+			a_vm->TraceStack("ActorBase is None", a_stackID);
 			return -1;
+		}
 
 		auto sex = a_base->GetSex();
 		switch (sex) {
@@ -25,18 +40,30 @@ namespace PapyrusActor
 		return -1;
 	}
 
-	RE::TESRace* GetRace(RE::StaticFunctionTag*, RE::TESNPC* a_base)
+	RE::TESRace* GetRace(
+		RE::BSScript::IVirtualMachine* a_vm,
+		RE::VMStackID a_stackID,
+		RE::StaticFunctionTag*,
+		RE::TESNPC* a_base)
 	{
-		if (!a_base)
+		if (!a_base) {
+			a_vm->TraceStack("ActorBase is None", a_stackID);
 			return nullptr;
+		}
 
 		return a_base->GetRace();
 	}
 
-	RE::BGSVoiceType* GetVoiceType(RE::StaticFunctionTag*, RE::TESNPC* a_base)
+	RE::BGSVoiceType* GetVoiceType(
+		RE::BSScript::IVirtualMachine* a_vm,
+		RE::VMStackID a_stackID,
+		RE::StaticFunctionTag*,
+		RE::TESNPC* a_base)
 	{
-		if (!a_base)
+		if (!a_base) {
+			a_vm->TraceStack("ActorBase is None", a_stackID);
 			return nullptr;
+		}
 
 		return a_base->GetVoiceType();
 	}
@@ -44,7 +71,6 @@ namespace PapyrusActor
 	std::vector<RE::Actor*> GetActors(RE::StaticFunctionTag*, RE::TESObjectREFR* a_centerRef, float a_radius)
 	{
 		std::vector<RE::Actor*> actors;
-
 		auto pl = RE::ProcessLists::GetSingleton();
 		if (a_centerRef && a_radius > 0) {
 			const auto originPos = a_centerRef->GetPosition();
@@ -68,19 +94,32 @@ namespace PapyrusActor
 		return actors;
 	}
 
-	void SetPositionEx(RE::StaticFunctionTag*, RE::Actor* a_actor, float a_x, float a_y, float a_z)
+	void SetPositionEx(
+		RE::BSScript::IVirtualMachine* a_vm,
+		RE::VMStackID a_stackID,
+		RE::StaticFunctionTag*,
+		RE::Actor* a_actor,
+		float a_x, float a_y, float a_z)
 	{
-		if (!a_actor)
+		if (!a_actor) {
+			a_vm->TraceStack("Actor is None", a_stackID);
 			return;
+		}
 
 		RE::NiPoint3 pos{ a_x, a_y, a_z };
 		a_actor->SetPosition(pos, false);
 	}
 
-	RE::Actor* GetActorFromBase(RE::StaticFunctionTag*, RE::TESNPC* a_base)
+	RE::Actor* GetActorFromBase(
+		RE::BSScript::IVirtualMachine* a_vm,
+		RE::VMStackID a_stackID,
+		RE::StaticFunctionTag*,
+		RE::TESNPC* a_base)
 	{
-		if (!a_base)
+		if (!a_base) {
+			a_vm->TraceStack("ActorBase is None", a_stackID);
 			return nullptr;
+		}
 
 		const auto& [map, lock] = RE::TESForm::GetAllForms();
 		const RE::BSReadWriteLock l{ lock };
@@ -96,10 +135,22 @@ namespace PapyrusActor
 		return nullptr;
 	}
 
-	std::vector<RE::TESNPC*> LookupRelationshipPartners(RE::StaticFunctionTag*, RE::Actor* a_actor, RE::BGSAssociationType* a_type)
+	std::vector<RE::TESNPC*> LookupRelationshipPartners(
+		RE::BSScript::IVirtualMachine* a_vm,
+		RE::VMStackID a_stackID,
+		RE::StaticFunctionTag*,
+		RE::Actor* a_actor,
+		RE::BGSAssociationType* a_type)
 	{
-		if (!a_actor || !a_type)
+		if (!a_actor) {
+			a_vm->TraceStack("Actor is None", a_stackID);
 			return {};
+		}
+
+		if (!a_type) {
+			a_vm->TraceStack("AssociationType is None", a_stackID);
+			return {};
+		}
 
 		std::vector<RE::TESNPC*> ret;
 		auto base = a_actor->GetActorBase();
@@ -116,49 +167,49 @@ namespace PapyrusActor
 		return ret;
 	}
 
-	void ToggleCombat(RE::StaticFunctionTag*, bool enable){
-		auto processor = RE::ProcessLists::GetSingleton();
-
-		processor->runDetection = enable;
-		processor->ClearCachedFactionFightReactions();
+	void ToggleCombat(RE::StaticFunctionTag*, bool a_enable)
+	{
+		auto pl = RE::ProcessLists::GetSingleton();
+		pl->runDetection = a_enable;
+		pl->ClearCachedFactionFightReactions();
 	}
 
-	bool DetectionActive(RE::StaticFunctionTag*){
-		return RE::ProcessLists::GetSingleton()->runDetection;
+	bool DetectionActive(RE::StaticFunctionTag*)
+	{
+		auto pl = RE::ProcessLists::GetSingleton();
+		return pl->runDetection;
 	}
 
-	std::vector<RE::Actor*> SortActorsByDistance(RE::StaticFunctionTag*, RE::TESObjectREFR* a_ref, std::vector<RE::Actor*> a_list){
-
-
-		int i,n=a_list.size(),j;
-		RE::Actor* temp;
-
-
-		for(i=0;i<n;i++)
-		{
-    		for(j=0;j<n-i-1;j++)
-    		{
-    	    	//if( a[j]>a[j+1] )
-    	    	if ((a_ref->data.location.GetDistance(a_list[j]->data.location)) > (a_ref->data.location.GetDistance(a_list[j+1]->data.location)) )
-    	   		{
-    	    	    temp=a_list[j+1];//swaping element 
-    	    	    a_list[j+1]=a_list[j];
-    	    	    a_list[j]=temp;
-    		    }
-		    }
+	std::vector<RE::Actor*> SortActorsByDistance(
+		RE::BSScript::IVirtualMachine* a_vm,
+		RE::VMStackID a_stackID,
+		RE::StaticFunctionTag*,
+		RE::TESObjectREFR* a_centerRef,
+		std::vector<RE::Actor*> a_list)
+	{
+		if (!a_centerRef) {
+			a_vm->TraceStack("CenterRef is None", a_stackID);
+			return {};
 		}
-		
 
+		const auto originPos = a_centerRef->GetPosition();
+		std::sort(a_list.begin(), a_list.end(), [&](RE::Actor* a_refA, RE::Actor* a_refB) {
+			return originPos.GetDistance(a_refA->GetPosition()) < originPos.GetDistance(a_refB->GetPosition());
+		});
 
 		return a_list;
 	}
 
-	std::vector<RE::Actor*> RemoveActorsWithGender(RE::StaticFunctionTag*, std::vector<RE::Actor*> a_list, int gender){
+	std::vector<RE::Actor*> RemoveActorsWithGender(RE::StaticFunctionTag*, std::vector<RE::Actor*> a_actors, int32_t a_gender)
+	{
 		std::vector<RE::Actor*> ret;
 
-		for (auto act : a_list)
-			if (act->GetActorBase()->GetSex() != gender )
-				ret.push_back(act);
+		auto sex = static_cast<RE::SEX>(a_gender);
+		for (auto actor : a_actors) {
+			auto base = actor->GetActorBase();
+			if (base->GetSex() != sex)
+				ret.push_back(actor);
+		}
 
 		return ret;
 	}
