@@ -102,6 +102,12 @@ namespace PapyrusUtil
 		locker->Unlock(a_lock);
 	}
 
+	std::string Translate(RE::StaticFunctionTag*, std::string a_key)
+	{
+		auto locale = LocaleManager::GetSingleton();
+		return locale->Translate(a_key);
+	}
+
 	bool Bind(VM* a_vm)
 	{
 		const auto obj = "OSANative"sv;
@@ -114,6 +120,8 @@ namespace PapyrusUtil
 
 		BIND(TryLock);
 		BIND(Unlock);
+
+		BIND(Translate);
 
 		return true;
 	}

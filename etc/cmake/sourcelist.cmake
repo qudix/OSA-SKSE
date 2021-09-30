@@ -1,4 +1,6 @@
 set(SOURCES
+	src/Game/LocaleManager.cpp
+	src/Game/LocaleManager.h
 	src/Game/Locker.h
 	src/Game/Patch.h
 	src/PCH.h
