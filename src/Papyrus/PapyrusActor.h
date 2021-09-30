@@ -214,10 +214,33 @@ namespace PapyrusActor
 		return ret;
 	}
 
+	std::vector<RE::TESForm*> GetEquippedAmmo(RE::StaticFunctionTag*, RE::Actor* a_actor) //modified from PO3
+	{
+		std::vector<RE::TESForm*> result;
+
+		if (!a_actor) {
+			return result;
+		}
+
+		auto inv = a_actor->GetInventory();
+		for (const auto& [item, data] : inv) {
+			if (item->Is(RE::FormType::LeveledItem)) {
+				continue;
+			}
+			const auto& [count, entry] = data;
+			if (count > 0 && entry->IsWorn() && item->Is(RE::FormType::Ammo)) {
+				result.push_back(item);
+			}
+		}
+
+		return result;
+	}
+
 	bool Bind(VM* a_vm)
 	{
 		const auto obj = "OSANative"sv;
 
+		BIND(GetEquippedAmmo, true);
 		BIND(RemoveActorsWithGender, true);
 		BIND(SortActorsByDistance, true);
 		BIND(GetActorFromBase, true);
