@@ -124,8 +124,15 @@ std::string LocaleManager::GetLocalization(std::string a_key)
 	return ConvertWStringToString(str);
 }
 
-std::string LocaleManager::Translate(std::string a_key)
+std::string LocaleManager::Translate(std::string a_key, std::string a_locale)
 {
+	if (!a_locale.empty()) {
+		auto locale = ConvertStringToWString(a_locale);
+		if (!LoadLocalizationStrings(locale)) {
+			LoadLocalizationStrings();
+		}
+	}
+
 	if (!a_key.empty() && a_key[0] == '$') {
 		auto translation = GetLocalization(a_key);
 		return translation;
@@ -134,11 +141,11 @@ std::string LocaleManager::Translate(std::string a_key)
 	return a_key;
 }
 
-void LocaleManager::FindFiles(const std::filesystem::path& a_path, const std::wregex& a_pattern, bool a_english)
+bool LocaleManager::FindFiles(const std::filesystem::path& a_path, const std::wregex& a_pattern, bool a_english)
 {
 	std::error_code err;
 	if (!std::filesystem::exists(a_path, err))
-		return;
+		return false;
 
 	std::filesystem::path fileName;
 	for (auto& dirEntry : std::filesystem::directory_iterator(a_path)) {
@@ -147,6 +154,8 @@ void LocaleManager::FindFiles(const std::filesystem::path& a_path, const std::wr
 			ReadFromFile(dirEntry.path(), a_english);
 		}
 	}
+
+	return true;
 }
 
 void LocaleManager::ReadFromFile(const std::filesystem::path& a_path, bool a_english)
@@ -191,8 +200,11 @@ void LocaleManager::ReadFromFile(const std::filesystem::path& a_path, bool a_eng
 	}
 }
 
-void LocaleManager::LoadLocalizationStrings()
+bool LocaleManager::LoadLocalizationStrings(const std::wstring& a_locale)
 {
+	_localizations_ENG.clear();
+	_localizations_LOC.clear();
+
 	constexpr wchar_t REGEX_PREFIX[] = L".*_";
 	constexpr wchar_t ENGLISH[] = L"ENGLISH";
 	constexpr wchar_t REGEX_POSTFIX[] = L"\\.txt$";
@@ -202,10 +214,14 @@ void LocaleManager::LoadLocalizationStrings()
 
 	std::wstring pattern(REGEX_PREFIX);
 	std::wstring wLanguage(ENGLISH);
-	auto setting = RE::GetINISetting("sLanguage:General");
-	if (setting) {
-		auto u8Language = setting->GetString();
-		wLanguage = ConvertStringToWString(u8Language);
+	if (!a_locale.empty()) {
+		wLanguage = a_locale;
+	} else {
+		auto setting = RE::GetINISetting("sLanguage:General");
+		if (setting) {
+			auto u8Language = setting->GetString();
+			wLanguage = ConvertStringToWString(u8Language);
+		}
 	}
 	pattern += wLanguage;
 	pattern += REGEX_POSTFIX;
@@ -213,7 +229,7 @@ void LocaleManager::LoadLocalizationStrings()
 
 	bool english = _wcsicmp(ENGLISH, wLanguage.c_str()) == 0;
 
-	FindFiles(path, regex, english);
+	bool found = FindFiles(path, regex, english);
 	if (!english) {
 		pattern = REGEX_PREFIX;
 		pattern += ENGLISH;
@@ -221,6 +237,8 @@ void LocaleManager::LoadLocalizationStrings()
 		regex.assign(pattern, REGEX_FLAGS);
 		FindFiles(path, regex, true);
 	}
+
+	return found;
 }
 
 LocaleManager::LocalizationMap& LocaleManager::GetLocalizationMap()

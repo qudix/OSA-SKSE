@@ -13,7 +13,7 @@ public:
 	std::wstring GetLocalization(std::wstring a_key);
 	std::string GetLocalization(std::string a_key);
 
-	std::string Translate(std::string a_key);
+	std::string Translate(std::string a_key, std::string a_locale = "");
 
 private:
 	using LocalizationMap = std::unordered_map<std::wstring, std::wstring>;
@@ -26,7 +26,7 @@ private:
 	LocaleManager& operator=(const LocaleManager&) = delete;
 	LocaleManager& operator=(LocaleManager&&) = delete;
 
-	void FindFiles(
+	bool FindFiles(
 		const std::filesystem::path& a_path,
 		const std::wregex& a_pattern,
 		bool a_english
@@ -37,7 +37,7 @@ private:
 		bool a_english
 	);
 
-	void LoadLocalizationStrings();
+	bool LoadLocalizationStrings(const std::wstring& a_locale = L"");
 
 	LocalizationMap& GetLocalizationMap();
 	std::wstring GetLocalizationInternal(const std::wstring& a_key);
