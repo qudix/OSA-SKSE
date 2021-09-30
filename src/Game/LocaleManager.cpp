@@ -126,13 +126,6 @@ std::string LocaleManager::GetLocalization(std::string a_key)
 
 std::string LocaleManager::Translate(std::string a_key)
 {
-	if (!_localeOverride.empty()) {
-		if (!LoadLocalizationStrings(true)) {
-			_localeOverride = L"";
-			LoadLocalizationStrings();
-		}
-	}
-
 	if (!a_key.empty() && a_key[0] == '$') {
 		auto translation = GetLocalization(a_key);
 		return translation;
@@ -143,8 +136,15 @@ std::string LocaleManager::Translate(std::string a_key)
 
 void LocaleManager::SetOverride(std::string a_locale)
 {
-	auto locale = ConvertStringToWString(a_locale);
-	_localeOverride = locale;
+	if (!a_locale.empty()) {
+		auto locale = ConvertStringToWString(a_locale);
+		_localeOverride = locale;
+		if (LoadLocalizationStrings(true))
+			return;
+	}
+
+	_localeOverride = L"";
+	LoadLocalizationStrings();
 }
 
 bool LocaleManager::FindFiles(const std::filesystem::path& a_path, const std::wregex& a_pattern, bool a_english)
