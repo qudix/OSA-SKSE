@@ -13,7 +13,8 @@ public:
 	std::wstring GetLocalization(std::wstring a_key);
 	std::string GetLocalization(std::string a_key);
 
-	std::string Translate(std::string a_key, std::string a_locale = "");
+	std::string Translate(std::string a_key);
+	void SetOverride(std::string a_locale = "");
 
 private:
 	using LocalizationMap = std::unordered_map<std::wstring, std::wstring>;
@@ -37,7 +38,7 @@ private:
 		bool a_english
 	);
 
-	bool LoadLocalizationStrings(const std::wstring& a_locale = L"");
+	bool LoadLocalizationStrings(bool a_override = false);
 
 	LocalizationMap& GetLocalizationMap();
 	std::wstring GetLocalizationInternal(const std::wstring& a_key);
@@ -60,4 +61,5 @@ private:
 
 	LocalizationMap _localizations_ENG;
 	LocalizationMap _localizations_LOC;
+	std::wstring _localeOverride{ L"" };
 };

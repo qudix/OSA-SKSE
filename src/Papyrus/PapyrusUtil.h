@@ -102,10 +102,16 @@ namespace PapyrusUtil
 		locker->Unlock(a_lock);
 	}
 
-	std::string Translate(RE::StaticFunctionTag*, std::string a_key, std::string a_locale)
+	std::string Translate(RE::StaticFunctionTag*, std::string a_key)
 	{
 		auto locale = LocaleManager::GetSingleton();
-		return locale->Translate(a_key, a_locale);
+		return locale->Translate(a_key);
+	}
+
+	void SetLocale(RE::StaticFunctionTag*, std::string a_locale)
+	{
+		auto locale = LocaleManager::GetSingleton();
+		locale->SetOverride(a_locale);
 	}
 
 	bool Bind(VM* a_vm)
@@ -122,6 +128,7 @@ namespace PapyrusUtil
 		BIND(Unlock);
 
 		BIND(Translate);
+		BIND(SetLocale);
 
 		return true;
 	}

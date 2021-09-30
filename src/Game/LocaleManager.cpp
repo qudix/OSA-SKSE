@@ -124,11 +124,11 @@ std::string LocaleManager::GetLocalization(std::string a_key)
 	return ConvertWStringToString(str);
 }
 
-std::string LocaleManager::Translate(std::string a_key, std::string a_locale)
+std::string LocaleManager::Translate(std::string a_key)
 {
-	if (!a_locale.empty()) {
-		auto locale = ConvertStringToWString(a_locale);
-		if (!LoadLocalizationStrings(locale)) {
+	if (!_localeOverride.empty()) {
+		if (!LoadLocalizationStrings(true)) {
+			_localeOverride = L"";
 			LoadLocalizationStrings();
 		}
 	}
@@ -139,6 +139,12 @@ std::string LocaleManager::Translate(std::string a_key, std::string a_locale)
 	}
 
 	return a_key;
+}
+
+void LocaleManager::SetOverride(std::string a_locale)
+{
+	auto locale = ConvertStringToWString(a_locale);
+	_localeOverride = locale;
 }
 
 bool LocaleManager::FindFiles(const std::filesystem::path& a_path, const std::wregex& a_pattern, bool a_english)
@@ -200,7 +206,7 @@ void LocaleManager::ReadFromFile(const std::filesystem::path& a_path, bool a_eng
 	}
 }
 
-bool LocaleManager::LoadLocalizationStrings(const std::wstring& a_locale)
+bool LocaleManager::LoadLocalizationStrings(bool a_override)
 {
 	_localizations_ENG.clear();
 	_localizations_LOC.clear();
@@ -214,8 +220,8 @@ bool LocaleManager::LoadLocalizationStrings(const std::wstring& a_locale)
 
 	std::wstring pattern(REGEX_PREFIX);
 	std::wstring wLanguage(ENGLISH);
-	if (!a_locale.empty()) {
-		wLanguage = a_locale;
+	if (a_override) {
+		wLanguage = _localeOverride;
 	} else {
 		auto setting = RE::GetINISetting("sLanguage:General");
 		if (setting) {
