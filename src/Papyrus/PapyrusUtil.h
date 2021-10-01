@@ -3,6 +3,16 @@
 namespace PapyrusUtil
 {
     using VM = RE::BSScript::IVirtualMachine;
+
+	void PrintConsole(RE::StaticFunctionTag*, std::string a_msg)
+	{
+		const auto log = RE::ConsoleLog::GetSingleton();
+		if (log) {
+			auto locale = LocaleManager::GetSingleton();
+			auto msg = locale->Translate(a_msg);
+			log->Print(msg.c_str());
+		}
+	}
 	
 	RE::TESForm* NewObject(
 		RE::BSScript::IVirtualMachine* a_vm,
@@ -102,9 +112,23 @@ namespace PapyrusUtil
 		locker->Unlock(a_lock);
 	}
 
+	std::string Translate(RE::StaticFunctionTag*, std::string a_key)
+	{
+		auto locale = LocaleManager::GetSingleton();
+		return locale->Translate(a_key);
+	}
+
+	void SetLocale(RE::StaticFunctionTag*, std::string a_locale)
+	{
+		auto locale = LocaleManager::GetSingleton();
+		locale->SetOverride(a_locale);
+	}
+
 	bool Bind(VM* a_vm)
 	{
 		const auto obj = "OSANative"sv;
+
+		BIND(PrintConsole);
 
 		BIND(RandomInt, true);
 		BIND(RandomFloat, true);
@@ -114,6 +138,9 @@ namespace PapyrusUtil
 
 		BIND(TryLock);
 		BIND(Unlock);
+
+		BIND(Translate);
+		BIND(SetLocale);
 
 		return true;
 	}

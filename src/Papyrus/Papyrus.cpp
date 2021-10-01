@@ -1,6 +1,7 @@
 #include "Papyrus\Papyrus.h"
 #include "Papyrus\Script.h"
 
+#include "Game/LocaleManager.h"
 #include "Game/Locker.h"
 #include "Util.h"
 
